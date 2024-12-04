@@ -1,0 +1,17 @@
+# ninja log v5
+5	830	7549955738317816	CMakeFiles/Project_3.dir/AdjacencyList.cpp.obj	79033e6fce8ab39c
+8	932	7549955739317856	CMakeFiles/Project_3.dir/AdjacencyMatrix.cpp.obj	b7a2ad6a0c187438
+7	890	7549958702776580	CMakeFiles/Project_3.dir/AdjacencyMatrix.cpp.obj	b7a2ad6a0c187438
+7	776	7549959048023903	CMakeFiles/Project_3.dir/AdjacencyList.cpp.obj	79033e6fce8ab39c
+10	652	7550053510272189	CMakeFiles/Project_3.dir/AdjacencyList.cpp.obj	79033e6fce8ab39c
+14	788	7550053511628105	CMakeFiles/Project_3.dir/AdjacencyMatrix.cpp.obj	b7a2ad6a0c187438
+3	966	7550054321841006	CMakeFiles/Project_3.dir/main.cpp.obj	45bd7a4306773955
+968	1347	7550054325623265	Project_3.exe	99acf134339b03ce
+4	938	7550054764790097	CMakeFiles/Project_3.dir/main.cpp.obj	45bd7a4306773955
+939	1177	7550054767221513	Project_3.exe	99acf134339b03ce
+3	927	7550058241989762	CMakeFiles/Project_3.dir/main.cpp.obj	45bd7a4306773955
+927	1172	7550058244413810	Project_3.exe	99acf134339b03ce
+3	919	7550058351742897	CMakeFiles/Project_3.dir/main.cpp.obj	45bd7a4306773955
+919	1151	7550058354041120	Project_3.exe	99acf134339b03ce
+4	947	7550062109181524	CMakeFiles/Project_3.dir/main.cpp.obj	45bd7a4306773955
+947	1206	7550062111733254	Project_3.exe	99acf134339b03ce

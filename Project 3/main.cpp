@@ -1,112 +1,155 @@
+#include "AdjacencyList.h"
+#include "AdjacencyMatrix.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <chrono>
 #include <functional>
-#include "AdjacencyList.h"
-#include "AdjacencyMatrix.h"
 
 using namespace std;
-using namespace std::chrono;
-
-void readData(const string& filename, AdjacencyList& adjList, AdjacencyMatrix& adjMatrix) {
-    ifstream file(filename);
-    if (!file.is_open()) {
-        cerr << "Error opening file" << endl;
-        return;
-    }
-
-    string line;
-    while (getline(file, line)) {
-        stringstream ss(line);
-        int src, dest;
-        char comma;
-        ss >> src >> comma >> dest;
-        adjList.addEdge(src, dest);
-        adjMatrix.addEdge(src, dest);
-    }
-}
 
 void measureExecutionTime(const function<void()>& task, const string& taskName) {
-    auto start = high_resolution_clock::now();
+    auto start = chrono::high_resolution_clock::now();
     task();
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(end - start).count();
+    auto end = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(end - start).count();
     cout << taskName << " took " << duration << " microseconds" << endl;
-}
-
-void menu() {
-    cout << "\nOptions:\n";
-    cout << "1. Add a node\n";
-    cout << "2. Delete a node\n";
-    cout << "3. Search for a node\n";
-    cout << "4. Switch to the other data structure\n";
-    cout << "5. Exit\n";
-    cout << "Enter your choice: ";
 }
 
 int main() {
     AdjacencyList adjList;
     AdjacencyMatrix adjMatrix;
-
-    string filename = "data/100k.csv"; // Ensure the file is in the working directory
-    readData(filename, adjList, adjMatrix);
-
     bool usingList = true;
-    int choice;
 
-    do {
-        cout << "\nCurrently using: " << (usingList ? "Adjacency List" : "Adjacency Matrix") << "\n";
-        menu();
+    ifstream file("100k.csv");
+    string line;
 
-        while (!(cin >> choice)) {  // Handle invalid input
+    if (!file) {
+        cerr << "Error: Could not open file." << endl;
+        return 1;
+    }
+
+    // Read the first line and skip the first 24 values
+    if (getline(file, line)) {
+        stringstream ss(line);
+        string token;
+
+        for (int i = 0; i < 24; ++i) {
+            if (!getline(ss, token, ',')) {
+                cerr << "Error: Header does not contain 24 values." << endl;
+                return 1;
+            }
+        }
+    } else {
+        cerr << "Error: File is empty or malformed." << endl;
+        return 1;
+    }
+
+    // Process the first 1,000 rows
+    int rowCount = 0;
+    while (getline(file, line) && rowCount < 1000) {
+        stringstream ss(line);
+        string token;
+        vector<string> rowData;
+        int id;
+
+        // Parse the first value as ID
+        if (!getline(ss, token, ',')) {
+            cerr << "Malformed row: " << line << endl;
+            continue; // Skip invalid row
+        }
+
+        try {
+            id = stoi(token); // Convert to integer
+        } catch (const invalid_argument&) {
+            cerr << "Invalid ID value in row: " << line << endl;
+            continue; // Skip invalid row
+        }
+
+        // Parse the remaining fields
+        while (getline(ss, token, ',')) {
+            rowData.push_back(token);
+        }
+
+        auto node = make_shared<Node>(id, rowData);
+        adjList.addNode(node);
+        adjMatrix.addNode(node);
+        rowCount++;
+    }
+
+    file.close();
+    cout << "Loaded " << rowCount << " rows into the data structures." << endl;
+
+    while (true) {
+        cout << "\nUsing " << (usingList ? "Adjacency List" : "Adjacency Matrix") << endl;
+        cout << "1. Add Node\n2. Delete Node\n3. Search Node\n4. Switch Structure\n5. Exit\n";
+        cout << "Enter your choice: ";
+
+        int choice;
+        if (!(cin >> choice)) {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid input. Please enter a valid option: ";
+            cout << "Invalid input. Please enter a number." << endl;
+            continue;
         }
 
-        int node;
+        if (choice == 5) break;
+
         switch (choice) {
-            case 1:
-                cout << "Enter node to add: ";
-                cin >> node;
+            case 1: {
+                cout << "Enter Node ID: ";
+                int id;
+                cin >> id;
+
+                cout << "Enter additional properties separated by commas: ";
+                cin.ignore();
+                string properties;
+                getline(cin, properties);
+                stringstream propStream(properties);
+
+                vector<string> rowData;
+                string token;
+                while (getline(propStream, token, ',')) {
+                    rowData.push_back(token);
+                }
+
+                auto node = make_shared<Node>(id, rowData);
                 measureExecutionTime(
                         [&]() { usingList ? adjList.addNode(node) : adjMatrix.addNode(node); },
-                        "Add node"
+                        "Add Node"
                 );
                 break;
-            case 2:
-                cout << "Enter node to delete: ";
-                cin >> node;
+            }
+            case 2: {
+                cout << "Enter Node ID to delete: ";
+                int id;
+                cin >> id;
                 measureExecutionTime(
-                        [&]() { usingList ? adjList.deleteNode(node) : adjMatrix.deleteNode(node); },
-                        "Delete node"
+                        [&]() { usingList ? adjList.deleteNode(id) : adjMatrix.deleteNode(id); },
+                        "Delete Node"
                 );
                 break;
-            case 3:
-                cout << "Enter node to search: ";
-                cin >> node;
+            }
+            case 3: {
+                cout << "Enter Node ID to search: ";
+                int id;
+                cin >> id;
                 measureExecutionTime(
                         [&]() {
-                            cout << "Node " << (usingList
-                                                ? (adjList.search(node) ? "found" : "not found")
-                                                : (adjMatrix.search(node) ? "found" : "not found"))
-                                 << endl;
+                            bool found = usingList ? adjList.searchNode(id) : adjMatrix.searchNode(id);
+                            cout << (found ? "Node found" : "Node not found") << endl;
                         },
-                        "Search for node"
+                        "Search Node"
                 );
                 break;
+            }
             case 4:
                 usingList = !usingList;
-                cout << "Switched to " << (usingList ? "Adjacency List" : "Adjacency Matrix") << "\n";
-                break;
-            case 5:
-                cout << "Exiting...\n";
                 break;
             default:
-                cout << "Invalid choice\n";
+                cout << "Invalid choice. Please select a valid option." << endl;
         }
-    } while (choice != 5);
+    }
 
     return 0;
 }

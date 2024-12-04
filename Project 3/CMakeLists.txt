@@ -7,4 +7,5 @@ add_executable(Project_3 main.cpp
         AdjacencyList.cpp
         AdjacencyList.h
         AdjacencyMatrix.cpp
-        AdjacencyMatrix.h)
+        AdjacencyMatrix.h
+        Node.h)
