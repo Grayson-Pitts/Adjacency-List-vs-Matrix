@@ -1,20 +1,17 @@
 #include "AdjacencyMatrix.h"
-#include <algorithm>
 
-void AdjacencyMatrix::resizeMatrix() {
-    int size = nodeIndex.size();
-    matrix.resize(size);
-    for (auto& row : matrix) {
-        row.resize(size, 0);
-    }
-}
+AdjacencyMatrix::AdjacencyMatrix() : nextIndex(0) {}
 
 void AdjacencyMatrix::addNode(shared_ptr<Node> node) {
-    if (nodeIndex.find(node->id) == nodeIndex.end()) {
-        int idx = nodeIndex.size();
-        nodeIndex[node->id] = idx;
-        nodes[node->id] = node;
-        resizeMatrix();
+    int id = node->getId();
+    if (nodeIndex.find(id) == nodeIndex.end()) {
+        nodeIndex[id] = nextIndex++;
+        nodes[id] = node;
+
+        for (auto& row : matrix) {
+            row.push_back(false);
+        }
+        matrix.push_back(vector<bool>(nextIndex, false));
     }
 }
 
@@ -25,12 +22,15 @@ void AdjacencyMatrix::deleteNode(int id) {
         nodes.erase(id);
 
         for (auto& row : matrix) {
-            row.erase(row.begin() + idx);
+            row[idx] = false;
         }
-        matrix.erase(matrix.begin() + idx);
+        matrix[idx] = vector<bool>(nextIndex, false);
     }
 }
 
-bool AdjacencyMatrix::searchNode(int id) {
-    return nodeIndex.find(id) != nodeIndex.end();
+shared_ptr<Node> AdjacencyMatrix::searchNode(int id) {
+    if (nodes.find(id) != nodes.end()) {
+        return nodes[id];
+    }
+    return nullptr; // Node not found
 }

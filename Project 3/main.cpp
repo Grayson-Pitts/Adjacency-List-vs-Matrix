@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// Tracks method execution time
 void measureExecutionTime(const function<void()>& task, const string& taskName) {
     auto start = chrono::high_resolution_clock::now();
     task();
@@ -21,6 +22,7 @@ int main() {
     AdjacencyMatrix adjMatrix;
     bool usingList = true;
 
+    // Open data file
     ifstream file("100k.csv");
     string line;
 
@@ -29,23 +31,17 @@ int main() {
         return 1;
     }
 
-    // Read the first line and skip the first 24 values
+    // Skip first 24 values in header row
     if (getline(file, line)) {
         stringstream ss(line);
         string token;
 
         for (int i = 0; i < 24; ++i) {
-            if (!getline(ss, token, ',')) {
-                cerr << "Error: Header does not contain 24 values." << endl;
-                return 1;
-            }
+            getline(ss, token, ',');
         }
-    } else {
-        cerr << "Error: File is empty or malformed." << endl;
-        return 1;
     }
 
-    // Process the first 1,000 rows
+    // Process the first 1,000 rows (For testing purposes)
     int rowCount = 0;
     while (getline(file, line) && rowCount < 1000) {
         stringstream ss(line);
@@ -53,20 +49,14 @@ int main() {
         vector<string> rowData;
         int id;
 
-        // Parse the first value as ID
-        if (!getline(ss, token, ',')) {
-            cerr << "Malformed row: " << line << endl;
-            continue; // Skip invalid row
-        }
+        if (!getline(ss, token, ',')) continue;
 
         try {
-            id = stoi(token); // Convert to integer
+            id = stoi(token);
         } catch (const invalid_argument&) {
-            cerr << "Invalid ID value in row: " << line << endl;
-            continue; // Skip invalid row
+            continue;
         }
 
-        // Parse the remaining fields
         while (getline(ss, token, ',')) {
             rowData.push_back(token);
         }
@@ -80,6 +70,7 @@ int main() {
     file.close();
     cout << "Loaded " << rowCount << " rows into the data structures." << endl;
 
+    // Display option menu
     while (true) {
         cout << "\nUsing " << (usingList ? "Adjacency List" : "Adjacency Matrix") << endl;
         cout << "1. Add Node\n2. Delete Node\n3. Search Node\n4. Switch Structure\n5. Exit\n";
@@ -93,9 +84,11 @@ int main() {
             continue;
         }
 
+        // Exit option
         if (choice == 5) break;
 
         switch (choice) {
+            // Add Node
             case 1: {
                 cout << "Enter Node ID: ";
                 int id;
@@ -120,6 +113,7 @@ int main() {
                 );
                 break;
             }
+            // Delete Node
             case 2: {
                 cout << "Enter Node ID to delete: ";
                 int id;
@@ -130,19 +124,26 @@ int main() {
                 );
                 break;
             }
+            // Search Node
             case 3: {
                 cout << "Enter Node ID to search: ";
                 int id;
                 cin >> id;
                 measureExecutionTime(
                         [&]() {
-                            bool found = usingList ? adjList.searchNode(id) : adjMatrix.searchNode(id);
-                            cout << (found ? "Node found" : "Node not found") << endl;
+                            auto node = usingList ? adjList.searchNode(id) : adjMatrix.searchNode(id);
+                            if (node) {
+                                cout << "Node found! Details:" << endl;
+                                cout << node->toString() << endl;
+                            } else {
+                                cout << "Node not found" << endl;
+                            }
                         },
                         "Search Node"
                 );
                 break;
             }
+            // Switch Data Structure
             case 4:
                 usingList = !usingList;
                 break;
